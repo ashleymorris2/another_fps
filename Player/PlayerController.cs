@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using PickUps;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class PlayerController : MonoBehaviour
@@ -42,8 +43,7 @@ public class PlayerController : MonoBehaviour
 
     (int count, int max) AmmoClip = (0, 10);
 
-
-
+    
     private string currentAnimationState;
 
     private const string AMMO_TAG = "Ammo";
@@ -51,11 +51,11 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        playerBody = this.GetComponent<Rigidbody>();
-        playerCapsule = this.GetComponent<CapsuleCollider>();
+        playerBody = GetComponent<Rigidbody>();
+        playerCapsule = GetComponent<CapsuleCollider>();
 
         cameraRotation = playerCamera.transform.localRotation;
-        playerRotation = this.transform.localRotation;
+        playerRotation = transform.localRotation;
 
         TransitionToState(idleState);
     }
@@ -196,12 +196,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.gameObject.TryGetComponent<IPickupable>(out var pickup))
+        if (other.gameObject.TryGetComponent<IPickup>(out var pickup))
         {
             pickup.OnPickup();
         }
 
-        if (other.gameObject.tag == AMMO_TAG && Ammo.count < Ammo.max)
+        if (other.gameObject.CompareTag(AMMO_TAG) && Ammo.count < Ammo.max)
         {
             // ammoPickupAudio.Play();
 
@@ -210,7 +210,7 @@ public class PlayerController : MonoBehaviour
             // Destroy(other.gameObject);
         }
 
-        if (other.gameObject.tag == "Terrain")
+        if (other.gameObject.CompareTag("Terrain"))
         {
             currentState.OnCollisionEnter(this);
         }

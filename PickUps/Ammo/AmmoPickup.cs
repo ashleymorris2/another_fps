@@ -1,7 +1,8 @@
 
+using PickUps;
 using UnityEngine;
 
-public class AmmoPickup : MonoBehaviour, IPickupable
+public class AmmoPickup : MonoBehaviour, IPickup
 {
 
     [SerializeField] AmmoPickupStats ammoPickupStats;

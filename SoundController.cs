@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SoundController : MonoBehaviour
 {
-    [SerializeField] AudioSource shot;
+    [SerializeField] private AudioSource shot;
     
     public void PlayShotSound()
     {

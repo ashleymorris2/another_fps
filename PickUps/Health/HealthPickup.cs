@@ -1,7 +1,8 @@
 
+using PickUps;
 using UnityEngine;
 
-public class HealthPickup : MonoBehaviour, IPickupable
+public class HealthPickup : MonoBehaviour, IPickup
 {
 
     [SerializeField] HealthPickupStats healthPickupStats;

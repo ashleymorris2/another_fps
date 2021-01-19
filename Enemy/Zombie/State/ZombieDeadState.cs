@@ -1,19 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class ZombieDeadState : BaseState<ZombieController>
+namespace Enemy.Zombie.State
 {
-    public override void OnEnterState(ZombieController enemy)
+    public class ZombieDeadState : BaseState<ZombieController>
     {
-        enemy.ChangeAnimationState("DIE", 2f);
-    }
+        public override void OnEnterState(ZombieController enemy)
+        {
+            enemy.ChangeAnimationState("DIE", 2f);
+        }
 
-    public override void DoState(ZombieController enemy)
-    {
-    }
+        public override void DoState(ZombieController enemy)
+        {
+        }
 
-    public override void OnExitState(ZombieController enemy)
-    {
+        public override void OnExitState(ZombieController enemy)
+        {
+        }
     }
 }

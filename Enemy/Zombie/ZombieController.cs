@@ -1,88 +1,89 @@
-
-using System;
+using System.Diagnostics.CodeAnalysis;
+using Enemy.Zombie.State;
 using UnityEngine;
 using UnityEngine.AI;
-public class ZombieController : MonoBehaviour
+
+namespace Enemy.Zombie
 {
-
-    [SerializeField] float fieldOfView = 90f;
-
-    [SerializeField] private GameObject target;
-    public GameObject Target { get => target; }
-
-    private NavMeshAgent navMeshAgent;
-    public NavMeshAgent NavMeshAgent { get => navMeshAgent; }
-
-    private string currentAnimationState;
-    private Animator enemyAnimator;
-
-    private BaseState<ZombieController> currentState;
-    public readonly ZombieIdleState IdleState = new ZombieIdleState();
-    public readonly ZombieChasingState ChaseState = new ZombieChasingState();
-    public readonly ZombieAttackState AttackState = new ZombieAttackState();
-    public readonly ZombieWanderState WanderState = new ZombieWanderState();
-    public readonly ZombieDeadState DeadState = new ZombieDeadState();
-
-
-    void Start()
+    public class ZombieController : MonoBehaviour
     {
-        enemyAnimator = this.GetComponent<Animator>();
-        navMeshAgent = this.GetComponent<NavMeshAgent>();
+        [SerializeField] float fieldOfView = 90f;
+        [SerializeField] private GameObject target;
 
-        TransitionToState(IdleState);
-    }
+        private Animator enemyAnimator;
+        private string currentAnimationState;
+        private BaseState<ZombieController> currentState;
 
-    void Update()
-    {
-        currentState.DoState(this);
-    }
+        private readonly ZombieIdleState idleState = new ZombieIdleState();
+        public readonly ZombieChasingState chaseState = new ZombieChasingState();
+        public readonly ZombieAttackState attackState = new ZombieAttackState();
+        public readonly ZombieWanderState wanderState = new ZombieWanderState();
+        public readonly ZombieDeadState DeadState = new ZombieDeadState();
 
-    public void TransitionToState(BaseState<ZombieController> newState)
-    {
-        if (newState == currentState)
-            return;
+        public GameObject Target => target;
+        public NavMeshAgent NavMeshAgent { get; private set; }
+        
+        void Start()
+        {
+            enemyAnimator = GetComponent<Animator>();
+            NavMeshAgent = GetComponent<NavMeshAgent>();
 
-        currentState?.OnExitState(this);
+            TransitionToState(idleState);
+        }
 
-        currentState = newState;
+        void Update()
+        {
+            currentState.DoState(this);
+        }
 
-        currentState?.OnEnterState(this);
-    }
+        public void TransitionToState(BaseState<ZombieController> newState)
+        {
+            if (newState == currentState)
+                return;
 
-    public void ChangeAnimationState(string newState, float transitionTime = 0f)
-    {
-        if (newState == currentAnimationState)
-            return;
+            currentState?.OnExitState(this);
 
-        enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
+            currentState = newState;
 
-        currentAnimationState = newState;
-    }
+            currentState?.OnEnterState(this);
+        }
 
-    public float DistanceToPlayer()
-    {
-        return Vector3.Distance(target.transform.position, transform.position);
-    }
+        public void ChangeAnimationState(string newState, float transitionTime = 0f)
+        {
+            if (newState == currentAnimationState)
+                return;
 
-    public bool CanSeePlayer()
-    {
-      Vector3 direction = target.transform.position - transform.position;
-      float angle = Vector3.Angle(direction, transform.forward);
+            enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
 
-      if(angle < fieldOfView * 0.5)
-      {
-          if(Physics.Raycast(transform.position + transform.up, direction.normalized, out var hit, 10f))
-          {
-              return (hit.collider.gameObject == target);
-          }
-      }
+            currentAnimationState = newState;
+        }
 
-      return false; 
-    }
+        public float DistanceToPlayer()
+        {
+            return Vector3.Distance(target.transform.position, transform.position);
+        }
 
-    public bool TargetHasMoved()
-    {
-        var targetDistanceToLastPosition  = Vector3.Distance(target.transform.position, navMeshAgent.nextPosition);
-        return (targetDistanceToLastPosition >= 3f);
+        public bool CanSeePlayer()
+        {
+            var myTransform = transform;
+            var direction = target.transform.position - myTransform.position;
+            var angle = Vector3.Angle(direction, myTransform.forward);
+
+            if (angle < fieldOfView * 0.5)
+            {
+                if (Physics.Raycast(transform.position + transform.up, direction.normalized, out var hit, 10f))
+                {
+                    return (hit.collider.gameObject == target);
+                }
+            }
+
+            return false;
+        }
+
+        public bool TargetHasMoved()
+        {
+            var targetDistanceToLastPosition = Vector3.Distance(target.transform.position, NavMeshAgent.nextPosition);
+            return (targetDistanceToLastPosition >= 3f);
+        }
     }
 }

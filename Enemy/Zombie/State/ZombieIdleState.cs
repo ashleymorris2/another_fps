@@ -1,32 +1,30 @@
-using UnityEngine;
-
-
 //Enters chase state if it can see or hear the player
 //Can enter the wander state on a timer
-public class ZombieIdleState : BaseState<ZombieController>
+namespace Enemy.Zombie.State
 {
-    public override void OnEnterState(ZombieController enemy)
+    public class ZombieIdleState : BaseState<ZombieController>
     {
-        enemy.ChangeAnimationState("IDLE", 2f);
-    }
-
-  
-    public override void DoState(ZombieController enemy)
-    {
-        if(enemy.DistanceToPlayer() <= 10f)
+        public override void OnEnterState(ZombieController enemy)
         {
-            if(enemy.CanSeePlayer())
+            enemy.ChangeAnimationState("IDLE", 2f);
+        }
+        
+        public override void DoState(ZombieController enemy)
+        {
+            if(enemy.DistanceToPlayer() <= 10f)
             {
-                enemy.TransitionToState(enemy.ChaseState);
+                if(enemy.CanSeePlayer())
+                {
+                    enemy.TransitionToState(enemy.chaseState);
+                }
+            }
+            else{
+                enemy.TransitionToState(enemy.wanderState);
             }
         }
-        else{
-            enemy.TransitionToState(enemy.WanderState);
+
+        public override void OnExitState(ZombieController enemy)
+        {
         }
     }
-
-    public override void OnExitState(ZombieController enemy)
-    {
-    }
-
 }

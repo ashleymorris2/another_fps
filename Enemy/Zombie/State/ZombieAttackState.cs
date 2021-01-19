@@ -1,28 +1,28 @@
 
-public class ZombieAttackState : BaseState<ZombieController>
+namespace Enemy.Zombie.State
 {
-    public override void OnEnterState(ZombieController enemy)
+    public class ZombieAttackState : BaseState<ZombieController>
     {
-        enemy.ChangeAnimationState("ATTACKING", 1f);
-    }
-
-    public override void DoState(ZombieController enemy)
-    {
-        var adjusted = enemy.Target.transform.position;
-        // adjusted.z = 0;
-        adjusted.y = 0;
-        enemy.transform.LookAt(adjusted);
-
-        var agent = enemy.NavMeshAgent;
-        if (enemy.TargetHasMoved())
+        public override void OnEnterState(ZombieController enemy)
         {
-            enemy.TransitionToState(enemy.ChaseState);
+            enemy.ChangeAnimationState("ATTACKING", 1f);
+        }
+
+        public override void DoState(ZombieController enemy)
+        {
+            var adjusted = enemy.Target.transform.position;
+            // adjusted.z = 0;
+            adjusted.y = 0;
+            enemy.transform.LookAt(adjusted);
+
+            if (enemy.TargetHasMoved())
+            {
+                enemy.TransitionToState(enemy.chaseState);
+            }
+        }
+
+        public override void OnExitState(ZombieController enemy)
+        {
         }
     }
-
-    public override void OnExitState(ZombieController enemy)
-    {
-    }
-
-
 }
