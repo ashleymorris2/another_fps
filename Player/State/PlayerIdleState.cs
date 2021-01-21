@@ -1,3 +1,5 @@
+using Player;
+using Player.State;
 using UnityEngine;
 
 public class PlayerIdleState : PlayerBaseState
@@ -7,7 +9,7 @@ public class PlayerIdleState : PlayerBaseState
         player.CancelInvoke("PlayRandomFootstepAudio");
         if(player.RifleIsReady)
         {
-            player.ChangeAnimationState("Rifle Aiming Idle", 0.2f);
+            player.ChangeAnimationState("IDLE_SUB-GUN", 0.2f);
         }
     }
 

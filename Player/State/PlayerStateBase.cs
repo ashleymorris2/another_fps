@@ -1,7 +1,10 @@
 
-public abstract class PlayerBaseState 
+namespace Player.State
 {
-    public abstract void EnterState(PlayerController player);
-    public abstract void Update(PlayerController player);
-    public abstract  void OnCollisionEnter(PlayerController player);
+    public abstract class PlayerBaseState 
+    {
+        public abstract void EnterState(PlayerController player);
+        public abstract void Update(PlayerController player);
+        public abstract  void OnCollisionEnter(PlayerController player);
+    }
 }

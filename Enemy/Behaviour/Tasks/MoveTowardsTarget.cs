@@ -46,7 +46,5 @@ namespace Enemy.Behaviour.Tasks
 
             return TaskStatus.Running;
         }
-        
-        
     }
 }

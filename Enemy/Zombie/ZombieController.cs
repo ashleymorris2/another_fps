@@ -9,16 +9,17 @@ namespace Enemy.Zombie
     {
         [SerializeField] float fieldOfView = 90f;
         [SerializeField] private GameObject target;
-
+        [SerializeField] private GameObject ragdoll;
+        
         private Animator enemyAnimator;
         private string currentAnimationState;
+        
         private BaseState<ZombieController> currentState;
-
         private readonly ZombieIdleState idleState = new ZombieIdleState();
         public readonly ZombieChasingState chaseState = new ZombieChasingState();
         public readonly ZombieAttackState attackState = new ZombieAttackState();
         public readonly ZombieWanderState wanderState = new ZombieWanderState();
-        public readonly ZombieDeadState DeadState = new ZombieDeadState();
+        public readonly ZombieDeadState deadState = new ZombieDeadState();
 
         public GameObject Target => target;
         public NavMeshAgent NavMeshAgent { get; private set; }
@@ -29,10 +30,25 @@ namespace Enemy.Zombie
             NavMeshAgent = GetComponent<NavMeshAgent>();
 
             TransitionToState(idleState);
+
+            if (target == null)
+            {
+                target = GameObject.FindWithTag("Player");
+            }
         }
 
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                var _transform = transform;
+                var _ragdoll = Instantiate(ragdoll, _transform.position, _transform.rotation);
+                
+                _ragdoll.transform.Find("Hips").GetComponent<Rigidbody>().AddForce(Camera.main.transform.forward * 10000);
+                Destroy(gameObject);
+                
+                TransitionToState(deadState);
+            }
             currentState.DoState(this);
         }
 

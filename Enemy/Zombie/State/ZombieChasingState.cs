@@ -1,3 +1,5 @@
+using UnityEngine.AI;
+
 namespace Enemy.Zombie.State
 {
     public class ZombieChasingState : BaseState<ZombieController>
@@ -7,7 +9,7 @@ namespace Enemy.Zombie.State
         {
             enemy.ChangeAnimationState("RUNNING", 1f);
 
-            var agent = enemy.NavMeshAgent;
+            var agent = enemy.GetComponent<NavMeshAgent>();
             
             agent.SetDestination(enemy.Target.transform.position);
             

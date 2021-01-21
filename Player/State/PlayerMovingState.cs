@@ -1,4 +1,6 @@
 
+using Player;
+using Player.State;
 using UnityEngine;
 
 public class PlayerMovingState : PlayerBaseState

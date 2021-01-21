@@ -1,15 +1,35 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace Enemy
 {
+    [RequireComponent(typeof(SphereCollider))]
     public class Spawn : MonoBehaviour
     {
         [SerializeField] private GameObject[] zombiePrefabs;
         [SerializeField] private int amountToSpawn;
         [SerializeField] private float spawnRadius;
+        [SerializeField] private bool spawnOnTriggerEnter = false;
 
-        private void Start()
+        private void Awake()
+        {
+            if (!spawnOnTriggerEnter)
+            {
+                DoSpawn();
+            }
+        }
+        
+        private void OnTriggerEnter(Collider other)
+        {
+            if (spawnOnTriggerEnter && other.gameObject.CompareTag("Player"))
+            {
+                DoSpawn();
+            }
+        }
+        
+        private void DoSpawn()
         {
             for (var i = 0; i < amountToSpawn; i++)
             {
