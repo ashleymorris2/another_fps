@@ -1,17 +1,19 @@
-﻿using PickUps;
+﻿using System;
+using PickUps;
 using Player.State;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Player
 {
+    [RequireComponent(typeof(InputManager))]
     public class PlayerController : MonoBehaviour
     {
-        private float speed = 6f;
+        private float walkSpeed = 6f;
+        
         private float mouseSensitivity = 3f;
 
         PlayerBaseState currentState;
-
         public readonly PlayerIdleState idleState = new PlayerIdleState();
         public readonly PlayerJumpingState jumpingState = new PlayerJumpingState();
         public readonly PlayerMovingState movingState = new PlayerMovingState();
@@ -22,10 +24,13 @@ namespace Player
         private Quaternion playerRotation;
         private float cameraPitch = 0f;
         private Vector2 currentDirection = Vector2.zero;
-    
+
+      
+
         [SerializeField] Camera playerCamera;
         [SerializeField] Animator playerAnimator;
-    
+
+        #region refactor_out
         [SerializeField] AudioSource playerAudio;
         [SerializeField] AudioSource[] footstepsAudio;
         [SerializeField] AudioClip jumpAudio;
@@ -34,16 +39,23 @@ namespace Player
         [SerializeField] AudioClip healthPickupAudio;
         [SerializeField] AudioClip emptyGunAudio;
         [SerializeField] AudioClip reloadAudio;
+        #endregion
 
         public bool IsMoving { get; private set; } = false;
+        
         public bool RifleIsReady { get; private set; } = false;
-    
+
         (int count, int max) Ammo = (400, 400);
         (int count, int max) AmmoClip = (30, 30);
 
-    
+
         private string currentAnimationState;
-    
+
+        private void OnEnable()
+        {
+            InputManager.OnReloadKeyDown += HandleReload;
+        }
+
         void Start()
         {
             playerBody = GetComponent<Rigidbody>();
@@ -60,7 +72,7 @@ namespace Player
             HandleMovement();
             HandleMouseLook();
             HandleShoot();
-            HandleReload();
+            
 
             if (Input.GetKeyDown(KeyCode.F))
             {
@@ -72,23 +84,19 @@ namespace Player
 
         private void HandleReload()
         {
-            if (Input.GetKeyDown(KeyCode.R) && RifleIsReady && Ammo.count > 0)
-            {
-            
-                ChangeAnimationState("Reloading", 1f);
+            ChangeAnimationState("Reloading", 1f);
 
-                playerAudio.clip = reloadAudio;
-                playerAudio.Play();
+            playerAudio.clip = reloadAudio;
+            playerAudio.Play();
 
-                int ammoNeeded = AmmoClip.max - AmmoClip.count;
-                int ammoAvailable = ammoNeeded < Ammo.count ? ammoNeeded : Ammo.count;
+            int ammoNeeded = AmmoClip.max - AmmoClip.count;
+            int ammoAvailable = ammoNeeded < Ammo.count ? ammoNeeded : Ammo.count;
 
-                Ammo.count -= ammoAvailable;
-                AmmoClip.count += ammoAvailable;
+            Ammo.count -= ammoAvailable;
+            AmmoClip.count += ammoAvailable;
 
-                Debug.Log($"Current ammo: {Ammo.count}");
-                Debug.Log($"Current ammo in clip: {AmmoClip.count}");
-            }
+            Debug.Log($"Current ammo: {Ammo.count}");
+            Debug.Log($"Current ammo in clip: {AmmoClip.count}");
         }
 
         private void HandleShoot()
@@ -124,6 +132,7 @@ namespace Player
             {
                 ChangeAnimationState("Walk With Rifle", 1f);
             }
+
             InvokeRepeating("PlayRandomFootstepAudio", 0, 0.45f);
         }
 
@@ -149,7 +158,8 @@ namespace Player
             // if (Input.GetKey(KeyCode.LeftShift))
             //     speedModifier = runSpeed;
 
-            Vector3 movementVelocity = (transform.right * targetDirection.x + transform.forward * targetDirection.y) * speed;
+            Vector3 movementVelocity =
+                (transform.right * targetDirection.x + transform.forward * targetDirection.y) * walkSpeed;
             transform.position += (movementVelocity * Time.deltaTime);
 
             IsMoving = (Mathf.Abs(targetDirection.x) > 0 || Mathf.Abs(targetDirection.y) > 0);
@@ -181,7 +191,8 @@ namespace Player
 
         public bool IsGrounded()
         {
-            return (Physics.SphereCast(transform.position, playerCapsule.radius, Vector3.down, out var hitInfo, (playerCapsule.height / 2f) - playerCapsule.radius + 0.1f));
+            return (Physics.SphereCast(transform.position, playerCapsule.radius, Vector3.down, out var hitInfo,
+                (playerCapsule.height / 2f) - playerCapsule.radius + 0.1f));
         }
 
         public void TransitionToState(PlayerBaseState newState)
@@ -213,6 +224,11 @@ namespace Player
             {
                 currentState.OnCollisionEnter(this);
             }
+        }
+
+        private void OnDisable()
+        {
+            InputManager.OnReloadKeyDown -= HandleReload;
         }
     }
 }
