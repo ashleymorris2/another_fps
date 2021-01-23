@@ -15,16 +15,9 @@ public class PlayerHealth : MonoBehaviour
         if (instance == null)
             instance = this;
     }
-
-
-    void Start()
-    {
-
-    }
-
+    
     public bool IsAtMax() => currentHealth == maxHealth;
     
-
     public void AddHealth(int healAmount)
     {
         currentHealth = Mathf.Clamp(currentHealth + healAmount, 0, maxHealth);

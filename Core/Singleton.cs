@@ -8,13 +8,13 @@ namespace Core
         { 
             get
             {
-                if(instance == null)
-                    instance = FindObjectOfType<T>();
+                if(_instance == null)
+                    _instance = FindObjectOfType<T>();
 
-                return instance;
+                return _instance;
             }
         }
 
-        private static T instance;
+        private static T _instance;
     }
 }

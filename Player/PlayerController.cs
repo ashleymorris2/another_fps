@@ -13,7 +13,8 @@ namespace Player
         
         private float mouseSensitivity = 3f;
 
-        PlayerBaseState currentState;
+        PlayerBaseState _currentState;
+        
         public readonly PlayerIdleState idleState = new PlayerIdleState();
         public readonly PlayerJumpingState jumpingState = new PlayerJumpingState();
         public readonly PlayerMovingState movingState = new PlayerMovingState();
@@ -49,7 +50,7 @@ namespace Player
         (int count, int max) AmmoClip = (30, 30);
 
 
-        private string currentAnimationState;
+        private string _currentAnimationState;
 
         private void OnEnable()
         {
@@ -79,7 +80,7 @@ namespace Player
                 RifleIsReady = true;
             }
 
-            currentState.Update(this);
+            _currentState.Update(this);
         }
 
         private void HandleReload()
@@ -138,12 +139,12 @@ namespace Player
 
         public void ChangeAnimationState(string newState, float transitionTime = 0f)
         {
-            if (newState == currentAnimationState)
+            if (newState == _currentAnimationState)
                 return;
 
             playerAnimator.CrossFadeInFixedTime(newState, transitionTime);
 
-            currentAnimationState = newState;
+            _currentAnimationState = newState;
         }
 
         private void HandleMovement()
@@ -197,10 +198,10 @@ namespace Player
 
         public void TransitionToState(PlayerBaseState newState)
         {
-            if (currentState != newState)
+            if (_currentState != newState)
             {
-                currentState = newState;
-                currentState.EnterState(this);
+                _currentState = newState;
+                _currentState.EnterState(this);
             }
         }
 
@@ -222,7 +223,7 @@ namespace Player
 
             if (other.gameObject.CompareTag("Terrain"))
             {
-                currentState.OnCollisionEnter(this);
+                _currentState.OnCollisionEnter(this);
             }
         }
 

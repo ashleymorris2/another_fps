@@ -1,51 +1,50 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Player.Combat
 {
-    public class Bullet : MonoBehaviour
+    public class Bullet: MonoBehaviour
     {
+
         [SerializeField] float meshSkinWidth = 0.1f;
-
         [SerializeField] LayerMask layerMask;
-
-        [Tooltip("The speed at which the bullet travels in m/s")] [SerializeField]
-        float bulletVelocity = 90;
-
-        [Tooltip("How long the bullet lives for in seconds before being destroyed")] [SerializeField]
-        float lifeTime = 8;
-
-        [Tooltip("Collision effect that the bullet makes upon impact")] [SerializeField]
-        GameObject collisionEffect;
-
+        [SerializeField] float bulletVelocity = 90;
+        [SerializeField] float lifeTime = 8;
+        [SerializeField] GameObject collisionEffect;
         // [SerializeField] Transform bulletDirection;
-
-        private GameObject bullet;
-        private Rigidbody bulletModel;
-        private Collider bulletCollider;
 
         private float minimumMoveExtent;
         private float partialMoveExtent;
         private float sqrMinimumMoveExtent;
         private Vector3 previousPosition;
 
-        void Start()
+        // private GameObject bullet;
+        private Rigidbody bulletModel;
+        private Collider bulletCollider;
+
+        
+        private void Awake()
         {
-            bullet = gameObject;
             bulletModel = GetComponent<Rigidbody>();
             bulletCollider = bulletModel.GetComponent<Collider>();
+        }
 
-            // previousPosition = bulletModel.position;
-            //
-            // minimumMoveExtent = Mathf.Min(Mathf.Min(bulletCollider.bounds.extents.x, bulletCollider.bounds.extents.y),
-            //     bulletCollider.bounds.extents.z);
-            // partialMoveExtent = minimumMoveExtent * (1.0f - meshSkinWidth);
-            // sqrMinimumMoveExtent = minimumMoveExtent * partialMoveExtent;
+        void Start()
+        {
+            // bullet = transform.parent.gameObject;
+            // bulletModel = GetComponent<Rigidbody>();
+
+            previousPosition = bulletModel.position;
+
+            minimumMoveExtent = Mathf.Min(Mathf.Min(bulletCollider.bounds.extents.x, bulletCollider.bounds.extents.y), bulletCollider.bounds.extents.z);
+            partialMoveExtent = minimumMoveExtent * (1.0f - meshSkinWidth);
+            sqrMinimumMoveExtent = minimumMoveExtent * partialMoveExtent;
         }
 
         void FixedUpdate()
         {
             CheckForCollision();
-            // Move();
+            Move();
             Expire();
         }
 
@@ -59,22 +58,18 @@ namespace Player.Combat
                 var movementMagnitude = Mathf.Sqrt(movementSqrMagnitude);
 
                 //Use a raycast to see what is infront of the bullet that isn't on this layermask
-                if (Physics.Raycast(previousPosition, movementThisUpdate, out var hitInfo, movementMagnitude,
-                    ~layerMask))
+                if (Physics.Raycast(previousPosition, movementThisUpdate, out var hitInfo, movementMagnitude, ~layerMask))
                 {
                     if (!hitInfo.collider)
                         return;
 
                     if (hitInfo.collider.isTrigger)
-                        hitInfo.collider.SendMessage("OnTriggerEnter",
-                            bulletCollider); //Collider is a trigger let them handle OnTriggerEnter
+                        hitInfo.collider.SendMessage("OnTriggerEnter", bulletCollider); //Collider is a trigger let them handle OnTriggerEnter
 
                     if (!hitInfo.collider.isTrigger)
                     {
-                        OnTriggerEnter(hitInfo
-                            .collider); //Collider doesn't have a trigger call our own OnTriggerEnter..
-                        bulletModel.position =
-                            hitInfo.point - (movementThisUpdate / movementMagnitude) * partialMoveExtent;
+                        // OnTriggerEnter(hitInfo.collider);//Collider doesn't have a trigger call our own OnTriggerEnter..
+                        bulletModel.position = hitInfo.point - (movementThisUpdate / movementMagnitude) * partialMoveExtent;
                     }
                 }
             }
@@ -84,8 +79,8 @@ namespace Player.Combat
 
         private void Move()
         {
-            // bulletModel.AddForce(bullet.transform.forward * bulletVelocity, ForceMode.VelocityChange);
-            // bullet.transform.position = bulletModel.position;
+            bulletModel.AddForce(transform.forward * bulletVelocity, ForceMode.VelocityChange);
+            transform.position = bulletModel.position;
         }
 
         private void Expire()
@@ -94,35 +89,41 @@ namespace Player.Combat
 
             if (lifeTime <= 0)
             {
-                Destroy(bullet);
+                Destroy(this);
                 Debug.Log("Expired");
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            var damage = 25;
-            Debug.Log($"I {gameObject} Hit {other}");
-
-            // if (other.gameObject.CompareTag("Enemy"))
+            // var damage = 25;
+            //
+            // if (other.gameObject.tag == "Enemy" && !isEnemyBullet)
             // {
-            //     // other.gameObject.GetComponent<EnemyHealth>()?.TakeDamage(damage);
-            //     Debug.Log($"I {gameObject} isEnemyBullet Hit {other}");
+            //     other.gameObject.GetComponent<EnemyHealth>()?.TakeDamage(damage);
+            //     Debug.Log($"I {gameObject} isEnemyBullet = {isEnemyBullet} isPlayerBullet = {isPlayerBullet} Hit {other}");
             // }
-
-            // if (other.gameObject.tag == "Headshot")
+            //
+            // if (other.gameObject.tag == "Headshot" && !isEnemyBullet)
             // {
             //
             //     other.transform.parent.GetComponent<EnemyHealth>().TakeDamage(damage * 2);
             //     Debug.Log($"I {gameObject} isEnemyBullet = {isEnemyBullet} isPlayerBullet = {isPlayerBullet} Hit {other} - HEADSHOT");
             // }
-
-
+            //
+            // if (other.gameObject.tag == "Player" && !isPlayerBullet)
+            // {
+            //     Debug.Log($"Hit player at {transform.position}");
+            //     PlayerHealth.Instance.TakeDamage(damage);
+            // }
+        
             // Instantiate(collisionEffect, bullet.transform.position, bullet.transform.rotation);
-            if (!other.CompareTag("Enemy-Spawn"))
-            {
-                Destroy(bullet);
-            }
+            Destroy(gameObject);
+            // Debug.Log($"Hit player at {transform.position}");
+
         }
+
     }
 }
+
+
