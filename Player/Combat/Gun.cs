@@ -8,12 +8,12 @@ namespace ToExport.Scripts.Player.Combat
     {
         [Header("Gun Stats")] [SerializeField] private int damage;
         [SerializeField] private float timeBetweenShooting;
-        [SerializeField] private float spread;
-        [SerializeField] private float reloadTime;
+        [Tooltip("Random spread added to each bullet")][SerializeField] private float bulletSpread;
+        [Tooltip("How many seconds it takes to fully reload the weapon")][SerializeField] private float reloadTime;
         [SerializeField] private float timeBetweenShots;
-        [SerializeField] private int magazineSize;
-        [SerializeField] private int bulletsPerBurst;
-        [SerializeField] private bool isFullAuto;
+        [Tooltip("How many bullets the gun has per magazine")][SerializeField] private int magazineSize;
+        [Tooltip("How many bullets the gun fires per burst")][SerializeField] private int bulletsPerBurst;
+        [Tooltip("Can the trigger be held down to fire?")][SerializeField] private bool isFullAuto;
 
         [Header("Animator References")] 
         [SerializeField] private Animator gunAnimator;
@@ -26,15 +26,18 @@ namespace ToExport.Scripts.Player.Combat
         [SerializeField] private GameObject muzzleFlashPrefab; 
         
         [Header("Casing Settings (Optional)")]
-        [Tooltip("Casing Ejection Speed")] 
-        [SerializeField] private float ejectPower = 150f;
-        [Tooltip("Specify time to destroy the casing object")] 
-        [SerializeField] private float casingDestroyTimer = 2f;
-        [SerializeField] private GameObject casingPrefab;
-        [SerializeField] private Transform casingExitLocation;
+        [Tooltip("Casing Ejection Speed")][SerializeField] private float ejectPower = 150f;
+        [Tooltip("Specify time to destroy the casing object")][SerializeField] private float casingDestroyTimer = 2f;
+        [Tooltip("Casing prefab object")][SerializeField] private GameObject casingPrefab;
+        [Tooltip("The location that the casing is to exit from")][SerializeField] private Transform casingExitLocation;
 
-        private int _bulletsLeft;
-        private int _bulletsShot;
+        [Header("Audio Settings")] 
+        [Tooltip("Where the audio for this weapon originates from")][SerializeField] private AudioSource gunAudioSource;
+        [Tooltip("The sound that the gun makes when shooting")][SerializeField] private AudioClip shootingClip;
+        [Tooltip("Randomises the shooting pitch")][SerializeField][Range(0, 1f)] private float pitchRange;
+        
+        private int _bulletsInMagazine;
+        private int _bulletsShotThisBurst;
 
         private bool _isShooting;
         private bool _isReadyToShoot;
@@ -46,7 +49,7 @@ namespace ToExport.Scripts.Player.Combat
         
         private void Awake()
         {
-            _bulletsLeft = magazineSize;
+            _bulletsInMagazine = magazineSize;
             _isReadyToShoot = true;
         }
 
@@ -67,12 +70,12 @@ namespace ToExport.Scripts.Player.Combat
         {
             _isShooting = isFullAuto ? Input.GetKey(KeyCode.Mouse0) : Input.GetKeyDown(KeyCode.Mouse0);
 
-            if (Input.GetKeyDown(KeyCode.R) && _bulletsLeft < magazineSize && !_isReloading)
+            if (Input.GetKeyDown(KeyCode.R) && _bulletsInMagazine < magazineSize && !_isReloading)
                 Reload();
 
-            if (_isReadyToShoot && _isShooting && !_isReloading && _bulletsLeft > 0)
+            if (_isReadyToShoot && _isShooting && !_isReloading && _bulletsInMagazine > 0)
             {
-                _bulletsShot = bulletsPerBurst;
+                _bulletsShotThisBurst = bulletsPerBurst;
                 Shoot();
             }
         }
@@ -85,14 +88,16 @@ namespace ToExport.Scripts.Player.Combat
 
         private void Shoot()
         {
+            _isReadyToShoot = false;
+            
             gunAnimator.SetTrigger(Fire);
+            
             _muzzleFlash.Emit(1);
             
-            _isReadyToShoot = false;
-
-            //Spread
-            var randomX = Random.Range(-spread, spread);
-            var randomY = Random.Range(-spread, spread);
+            var pitch = gunAudioSource.pitch;
+            gunAudioSource.clip = shootingClip;
+            gunAudioSource.pitch = Random.Range(pitch - pitchRange, pitch + pitchRange);
+            gunAudioSource.Play();
             
             //Check if we hit something at the middle of the screen
             if (Physics.Raycast(PlayerCamera.Instance.transform.position, PlayerCamera.Instance.transform.forward, out var hit, 50f))
@@ -108,18 +113,22 @@ namespace ToExport.Scripts.Player.Combat
                 barrelLocation.LookAt(cameraTransform.position + (cameraTransform.forward * 30));
             }
             
+            //Spread
+            var randomX = Random.Range(-bulletSpread, bulletSpread);
+            var randomY = Random.Range(-bulletSpread, bulletSpread);
+            
             //Do Shot
             Vector3 shotDirection = barrelLocation.eulerAngles + new Vector3(randomX, randomY, 0);
             Instantiate(bulletPrefab, barrelLocation.position, Quaternion.Euler(shotDirection.x, shotDirection.y, shotDirection.z));
             
             CasingRelease();
             
-            _bulletsLeft--;
-            _bulletsShot--;
+            _bulletsInMagazine--;
+            _bulletsShotThisBurst--;
             
             Invoke(nameof(ResetShot), timeBetweenShooting);
 
-            if (_bulletsShot > 0 && _bulletsLeft > 0)
+            if (_bulletsShotThisBurst > 0 && _bulletsInMagazine > 0)
             {
                 Invoke(nameof(Shoot), timeBetweenShots);
             }
@@ -156,7 +165,7 @@ namespace ToExport.Scripts.Player.Combat
 
         private void ReloadFinished()
         {
-            _bulletsLeft = magazineSize;
+            _bulletsInMagazine = magazineSize;
             _isReloading = false;
         }
     }

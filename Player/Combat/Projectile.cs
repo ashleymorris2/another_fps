@@ -1,4 +1,5 @@
 ﻿using System;
+using RootMotion.Dynamics;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -13,7 +14,8 @@ namespace Player.Combat
 
         private void Start()
         {
-            _bulletVelocity = transform.forward * speed; //Gives us the direction of the bullet and the speed at which it moves
+            _bulletVelocity =
+                transform.forward * speed; //Gives us the direction of the bullet and the speed at which it moves
         }
 
         private void Update()
@@ -24,17 +26,19 @@ namespace Player.Combat
             for (var step = 0f; step < 1; step += stepSize)
             {
                 //Can add drag here:-
-                _bulletVelocity += Physics.gravity * (stepSize * Time.deltaTime); 
-                
+                _bulletVelocity += Physics.gravity * (stepSize * Time.deltaTime);
+
                 // Multiply by deltaTime, instead of a full second in a single frame.
-                Vector3 secondPosition = startPosition + _bulletVelocity *(stepSize * Time.deltaTime);
-                
+                Vector3 secondPosition = startPosition + _bulletVelocity * (stepSize * Time.deltaTime);
+
                 Ray ray = new Ray(startPosition, secondPosition - startPosition);
-                if (Physics.Raycast(ray, out var hitInfo ,(secondPosition - startPosition).magnitude))
-                { 
+                if (Physics.Raycast(ray, out var hitInfo, (secondPosition - startPosition).magnitude))
+                {
                     //Hit something here check the collider
                     Debug.Log("hit" + hitInfo.collider.gameObject);
-                    
+
+                    TestingCode(hitInfo);
+
                     Destroy(gameObject);
                 }
 
@@ -42,6 +46,22 @@ namespace Player.Combat
             }
 
             transform.position = startPosition;
+        }
+
+        void TestingCode(RaycastHit hit)
+        {
+            float unpin = 10f;
+            float force = 10f;
+
+            var rigid = hit.collider.gameObject.GetComponent<Rigidbody>();
+            if(rigid) rigid.AddForceAtPosition(Vector3.forward, hit.point, ForceMode.Impulse);
+            
+            var broadcaster = hit.collider.attachedRigidbody.GetComponent<MuscleCollisionBroadcaster>();
+
+            if (broadcaster != null)
+            {
+                broadcaster.Hit(unpin, Vector3.forward * force, hit.point);
+            }
         }
 
         private void OnDrawGizmos()
