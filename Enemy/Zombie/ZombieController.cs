@@ -11,8 +11,8 @@ namespace Enemy.Zombie
         [SerializeField] private GameObject target;
         [SerializeField] private GameObject ragdoll;
         
-        private Animator enemyAnimator;
-        private string currentAnimationState;
+        private Animator _enemyAnimator;
+        private string _currentAnimationState;
         
         private BaseState<ZombieController> currentState;
         private readonly ZombieIdleState idleState = new ZombieIdleState();
@@ -26,7 +26,7 @@ namespace Enemy.Zombie
         
         void Start()
         {
-            enemyAnimator = GetComponent<Animator>();
+            _enemyAnimator = GetComponent<Animator>();
             NavMeshAgent = GetComponent<NavMeshAgent>();
 
             TransitionToState(idleState);
@@ -66,12 +66,12 @@ namespace Enemy.Zombie
 
         public void ChangeAnimationState(string newState, float transitionTime = 0f)
         {
-            if (newState == currentAnimationState)
+            if (newState == _currentAnimationState)
                 return;
 
-            enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
+            _enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
 
-            currentAnimationState = newState;
+            _currentAnimationState = newState;
         }
 
         public float DistanceToPlayer()

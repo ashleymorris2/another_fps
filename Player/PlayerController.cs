@@ -26,8 +26,7 @@ namespace Player
         private float cameraPitch = 0f;
         private Vector2 currentDirection = Vector2.zero;
 
-      
-
+        
         [SerializeField] Camera playerCamera;
         [SerializeField] Animator playerAnimator;
 
