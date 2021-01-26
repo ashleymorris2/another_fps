@@ -15,7 +15,7 @@ namespace Enemy.Zombie
         private string _currentAnimationState;
         
         private BaseState<ZombieController> currentState;
-        private readonly ZombieIdleState idleState = new ZombieIdleState();
+        public readonly ZombieIdleState idleState = new ZombieIdleState();
         public readonly ZombieChasingState chaseState = new ZombieChasingState();
         public readonly ZombieAttackState attackState = new ZombieAttackState();
         public readonly ZombieWanderState wanderState = new ZombieWanderState();

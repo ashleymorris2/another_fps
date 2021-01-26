@@ -1,6 +1,7 @@
 ﻿using System;
 using RootMotion.Dynamics;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Serialization;
 
 namespace Player.Combat
@@ -31,13 +32,14 @@ namespace Player.Combat
                 // Multiply by deltaTime, instead of a full second in a single frame.
                 Vector3 secondPosition = startPosition + _bulletVelocity * (stepSize * Time.deltaTime);
 
-                Ray ray = new Ray(startPosition, secondPosition - startPosition);
-                if (Physics.Raycast(ray, out var hitInfo, (secondPosition - startPosition).magnitude))
+                var direction = secondPosition - startPosition;
+                Ray ray = new Ray(startPosition, direction);
+                if (Physics.Raycast(ray, out var hitInfo, direction.magnitude))
                 {
                     //Hit something here check the collider
                     Debug.Log("hit" + hitInfo.collider.gameObject);
 
-                    TestingCode(hitInfo);
+                    TestingCode(hitInfo, direction);
 
                     Destroy(gameObject);
                 }
@@ -48,19 +50,25 @@ namespace Player.Combat
             transform.position = startPosition;
         }
 
-        void TestingCode(RaycastHit hit)
+        void TestingCode(RaycastHit hit, Vector3 direction)
         {
-            float unpin = 10f;
-            float force = 10f;
+            float unpin = 5;
+            float force = 1800f;
 
             var rigid = hit.collider.gameObject.GetComponent<Rigidbody>();
-            if(rigid) rigid.AddForceAtPosition(Vector3.forward, hit.point, ForceMode.Impulse);
-            
-            var broadcaster = hit.collider.attachedRigidbody.GetComponent<MuscleCollisionBroadcaster>();
+            if (rigid) rigid.AddForceAtPosition(Vector3.forward, hit.point, ForceMode.Impulse);
 
-            if (broadcaster != null)
+            if (hit.collider.attachedRigidbody)
             {
-                broadcaster.Hit(unpin, Vector3.forward * force, hit.point);
+                hit.collider.attachedRigidbody.TryGetComponent<MuscleCollisionBroadcaster>(out var broadcaster);
+
+                if (broadcaster != null)
+                {
+                    broadcaster.Hit(unpin, direction * force, hit.point);
+                }
+
+                hit.collider.gameObject.TryGetComponent<Rigidbody>(out var hitLimb);
+                hitLimb.AddForceAtPosition( direction * force, hit.point);
             }
         }
 
