@@ -1,4 +1,6 @@
 
+using ToExport.Scripts.Player;
+
 namespace Player.State
 {
     public abstract class PlayerBaseState 

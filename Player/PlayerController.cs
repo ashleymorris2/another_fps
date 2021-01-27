@@ -1,15 +1,15 @@
-﻿using System;
-using PickUps;
+﻿using PickUps;
+using Player;
 using Player.State;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Player
+namespace ToExport.Scripts.Player
 {
     [RequireComponent(typeof(InputManager))]
     public class PlayerController : MonoBehaviour
     {
-        private float walkSpeed = 6f;
+        [SerializeField] private float walkSpeed = 6f;
         
         private float mouseSensitivity = 3f;
 

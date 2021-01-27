@@ -1,24 +1,35 @@
+using RootMotion.Dynamics;
 using UnityEngine;
 
 namespace Enemy.Zombie.State
 {
     public class ZombieWanderState : BaseState<ZombieController>
     {
-        private float originalStoppingDistance = 0f;
+        private float _originalStoppingDistance = 0f;
 
         public override void OnEnterState(ZombieController enemy)
         {
+            var agent = enemy.MeshAgent;
+            agent.speed = enemy.WalkingSpeed;
+            
             enemy.ChangeAnimationState("WALKING", 1f);
-            enemy.NavMeshAgent.SetDestination(RandomDestination(enemy));
-            originalStoppingDistance = enemy.NavMeshAgent.stoppingDistance;
-            enemy.NavMeshAgent.stoppingDistance = 0;
+            enemy.MeshAgent.SetDestination(RandomDestination(enemy));
+            
+            agent.stoppingDistance = 0;
         }
 
         public override void DoState(ZombieController enemy)
         {
-            if (!enemy.NavMeshAgent.hasPath)
+            if (enemy.Puppet && enemy.Puppet.state == BehaviourPuppet.State.Unpinned)
+                enemy.TransitionToState(enemy.fallenState);
+            
+            var agent = enemy.MeshAgent;
+            
+            if (!agent.enabled) return;
+            
+            if (!agent.hasPath)
             {
-                enemy.NavMeshAgent.SetDestination(RandomDestination(enemy));
+                enemy.MeshAgent.SetDestination(RandomDestination(enemy));
             }
         
             if (enemy.DistanceToPlayer() <= 10f)
@@ -32,7 +43,8 @@ namespace Enemy.Zombie.State
 
         public override void OnExitState(ZombieController enemy)
         {
-            enemy.NavMeshAgent.stoppingDistance = originalStoppingDistance;
+            Debug.Log("Im not wandering any more");
+            enemy.MeshAgent.stoppingDistance = enemy.StoppingDistance;
         }
 
         private Vector3 RandomDestination(ZombieController enemy)

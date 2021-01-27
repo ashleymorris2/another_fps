@@ -1,27 +1,32 @@
+using RootMotion.Dynamics;
+using UnityEngine;
 using UnityEngine.AI;
 
 namespace Enemy.Zombie.State
 {
     public class ZombieChasingState : BaseState<ZombieController>
     {
-        private float originalSpeed;
         public override void OnEnterState(ZombieController enemy)
         {
-            enemy.ChangeAnimationState("RUNNING", 1f);
+            var agent = enemy.MeshAgent;
 
-            var agent = enemy.GetComponent<NavMeshAgent>();
+            if (!agent.enabled) return;
+
+            enemy.ChangeAnimationState("RUNNING", 1f);
             
+            agent.speed = enemy.RunningSpeed;
             agent.SetDestination(enemy.Target.transform.position);
-            
-            originalSpeed = agent.speed;
-            agent.speed += 4f;
         }
 
         public override void DoState(ZombieController enemy)
         {
-            var agent = enemy.NavMeshAgent;
-            var moved = enemy.TargetHasMoved();
-
+            if (enemy.Puppet && enemy.Puppet.state == BehaviourPuppet.State.Unpinned)
+                enemy.TransitionToState(enemy.fallenState);
+            
+            var agent = enemy.MeshAgent;
+            
+            if (!agent.enabled) return;
+            
             if (enemy.TargetHasMoved())
             {
                 agent.SetDestination(enemy.Target.transform.position);
@@ -34,7 +39,7 @@ namespace Enemy.Zombie.State
 
         public override void OnExitState(ZombieController enemy)
         {
-            enemy.NavMeshAgent.speed = originalSpeed;
+
         }
     }
 }

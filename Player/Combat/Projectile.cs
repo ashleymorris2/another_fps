@@ -1,14 +1,13 @@
-﻿using System;
-using RootMotion.Dynamics;
+﻿using RootMotion.Dynamics;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Serialization;
 
-namespace Player.Combat
+namespace ToExport.Scripts.Player.Combat
 {
     public class Projectile : MonoBehaviour
     {
         [SerializeField] private float speed = 420f; //Set by the gun - speed in m/s
+        [SerializeField] private LayerMask layersToIgnore;
+        
 
         private int predictionStepsPerFrame = 6;
         private Vector3 _bulletVelocity;
@@ -17,6 +16,7 @@ namespace Player.Combat
         {
             _bulletVelocity =
                 transform.forward * speed; //Gives us the direction of the bullet and the speed at which it moves
+
         }
 
         private void Update()
@@ -34,10 +34,11 @@ namespace Player.Combat
 
                 var direction = secondPosition - startPosition;
                 Ray ray = new Ray(startPosition, direction);
-                if (Physics.Raycast(ray, out var hitInfo, direction.magnitude))
+                
+                if (Physics.Raycast(ray, out var hitInfo, direction.magnitude, ~layersToIgnore))
                 {
                     //Hit something here check the collider
-                    Debug.Log("hit" + hitInfo.collider.gameObject);
+                    // Debug.Log("hit" + hitInfo.collider.gameObject);
 
                     TestingCode(hitInfo, direction);
 
@@ -71,7 +72,7 @@ namespace Player.Combat
                 hitLimb.AddForceAtPosition( direction * force, hit.point);
             }
         }
-
+        
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;

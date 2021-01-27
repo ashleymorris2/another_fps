@@ -1,5 +1,6 @@
 using Player;
 using Player.State;
+using ToExport.Scripts.Player;
 using UnityEngine;
 
 public class PlayerIdleState : PlayerBaseState
