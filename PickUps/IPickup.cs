@@ -1,4 +1,4 @@
-namespace PickUps
+namespace ToExport.Scripts.PickUps
 {
     public interface IPickup 
     {

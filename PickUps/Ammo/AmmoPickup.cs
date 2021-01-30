@@ -1,5 +1,4 @@
-
-using PickUps;
+using ToExport.Scripts.PickUps;
 using UnityEngine;
 
 public class AmmoPickup : MonoBehaviour, IPickup

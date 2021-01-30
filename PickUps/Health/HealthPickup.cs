@@ -1,5 +1,4 @@
-
-using PickUps;
+using ToExport.Scripts.PickUps;
 using UnityEngine;
 
 public class HealthPickup : MonoBehaviour, IPickup

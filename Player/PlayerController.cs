@@ -1,6 +1,6 @@
-﻿using PickUps;
-using Player;
+﻿using Player;
 using Player.State;
+using ToExport.Scripts.PickUps;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -73,7 +73,6 @@ namespace ToExport.Scripts.Player
             HandleMouseLook();
             HandleShoot();
             
-
             if (Input.GetKeyDown(KeyCode.F))
             {
                 RifleIsReady = true;
@@ -94,9 +93,7 @@ namespace ToExport.Scripts.Player
 
             Ammo.count -= ammoAvailable;
             AmmoClip.count += ammoAvailable;
-
-            Debug.Log($"Current ammo: {Ammo.count}");
-            Debug.Log($"Current ammo in clip: {AmmoClip.count}");
+            
         }
 
         private void HandleShoot()
@@ -107,7 +104,6 @@ namespace ToExport.Scripts.Player
                 {
                     ChangeAnimationState("SHOOT_SUB-GUN");
                     AmmoClip.count--;
-                    Debug.Log($"Current ammo in clip: {AmmoClip.count}");
                 }
                 else if (RifleIsReady)
                 {
@@ -186,7 +182,7 @@ namespace ToExport.Scripts.Player
             cameraPitch = Mathf.Clamp(cameraPitch, -90f, 90f);
 
             playerCamera.transform.localEulerAngles = Vector3.right * cameraPitch;
-            playerBody.transform.Rotate(Vector3.up * mouseDelta.x * mouseSensitivity);
+            playerBody.transform.Rotate(Vector3.up * (mouseDelta.x * mouseSensitivity));
         }
 
         public bool IsGrounded()

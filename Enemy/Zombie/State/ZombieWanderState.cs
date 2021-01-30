@@ -5,8 +5,6 @@ namespace Enemy.Zombie.State
 {
     public class ZombieWanderState : BaseState<ZombieController>
     {
-        private float _originalStoppingDistance = 0f;
-
         public override void OnEnterState(ZombieController enemy)
         {
             var agent = enemy.MeshAgent;

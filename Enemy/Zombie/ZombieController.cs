@@ -2,12 +2,13 @@ using System.Diagnostics.CodeAnalysis;
 using BehaviorDesigner.Runtime.Tasks;
 using Enemy.Zombie.State;
 using RootMotion.Dynamics;
+using ToExport.Scripts.Enemy;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace Enemy.Zombie
 {
-    public class ZombieController : MonoBehaviour
+    public class ZombieController : MonoBehaviour, IDamageable
     {
         [SerializeField] float fieldOfView = 90f;
         [SerializeField] private GameObject target;
@@ -111,5 +112,11 @@ namespace Enemy.Zombie
             var targetDistanceToLastPosition = Vector3.Distance(target.transform.position, MeshAgent.nextPosition);
             return (targetDistanceToLastPosition >= 3f);
         }
+
+        public void TakeDamage(int damageAmount)
+        {
+            Debug.Log($"I have taken {damageAmount} damage");
+        }
+        
     }
 }

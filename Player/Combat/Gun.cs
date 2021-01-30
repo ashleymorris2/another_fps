@@ -1,4 +1,5 @@
 ﻿using Player;
+using ToExport.Scripts.Core;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -6,13 +7,15 @@ namespace ToExport.Scripts.Player.Combat
 {
     public class Gun : MonoBehaviour
     {
-        [Header("Gun Stats")] [SerializeField] private int damage;
+        [Header("Gun Stats")] 
+        [SerializeField] private int damage;
         [SerializeField] private float timeBetweenShooting;
         [Tooltip("Random spread added to each bullet")][SerializeField] private float bulletSpread;
         [Tooltip("How many seconds it takes to fully reload the weapon")][SerializeField] private float reloadTime;
         [SerializeField] private float timeBetweenShots;
         [Tooltip("How many bullets the gun has per magazine")][SerializeField] private int magazineSize;
         [Tooltip("How many bullets the gun fires per burst")][SerializeField] private int bulletsPerBurst;
+        [Tooltip("The speed of the projectile once its left the barrel")][SerializeField] private float muzzleVelocity;
         [Tooltip("Can the trigger be held down to fire?")][SerializeField] private bool isFullAuto;
 
         [Header("Animator References")] 
@@ -44,6 +47,9 @@ namespace ToExport.Scripts.Player.Combat
         private bool _isReloading;
         
         private ParticleSystem _muzzleFlash;
+        private LayerMask _layersToIgnore;
+
+        private ProjectileFactory _projectileFactory;
 
         private static readonly int Fire = Animator.StringToHash("Fire");
         
@@ -51,6 +57,10 @@ namespace ToExport.Scripts.Player.Combat
         {
             _bulletsInMagazine = magazineSize;
             _isReadyToShoot = true;
+
+            _layersToIgnore = bulletPrefab.GetComponent<Projectile>().GetLayersToIgnore();
+
+            _projectileFactory = new ProjectileFactory(bulletPrefab, damage, muzzleVelocity);
         }
 
         private void Start()
@@ -99,18 +109,19 @@ namespace ToExport.Scripts.Player.Combat
             gunAudioSource.pitch = Random.Range(pitch - pitchRange, pitch + pitchRange);
             gunAudioSource.Play();
             
+            var cameraTransform = PlayerCamera.Instance.transform;
+            
             //Check if we hit something at the middle of the screen
-            if (Physics.Raycast(PlayerCamera.Instance.transform.position, PlayerCamera.Instance.transform.forward, out var hit, 50f))
+            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out var hit, 50f, _layersToIgnore))
             {
-                if (Vector3.Distance(PlayerCamera.Instance.transform.position, hit.point) > 1f)
+                if (Vector3.Distance(cameraTransform.position, hit.point) > 1f)
                 {
                     barrelLocation.LookAt(hit.point);
                 }
             }
             else
             {
-                var cameraTransform = PlayerCamera.Instance.transform;
-                barrelLocation.LookAt(cameraTransform.position + (cameraTransform.forward * 30));
+                barrelLocation.LookAt(cameraTransform.position + (cameraTransform.forward * 80f));
             }
             
             //Spread
@@ -119,7 +130,7 @@ namespace ToExport.Scripts.Player.Combat
             
             //Do Shot
             Vector3 shotDirection = barrelLocation.eulerAngles + new Vector3(randomX, randomY, 0);
-            Instantiate(bulletPrefab, barrelLocation.position, Quaternion.Euler(shotDirection.x, shotDirection.y, shotDirection.z));
+            _projectileFactory.Create(barrelLocation.position, shotDirection);
             
             CasingRelease();
             
