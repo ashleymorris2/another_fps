@@ -1,5 +1,4 @@
 ﻿using Player;
-using ToExport.Scripts.Core;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -104,9 +103,7 @@ namespace ToExport.Scripts.Player.Combat
             
             _muzzleFlash.Emit(1);
             
-            var pitch = gunAudioSource.pitch;
             gunAudioSource.clip = shootingClip;
-            gunAudioSource.pitch = Random.Range(pitch - pitchRange, pitch + pitchRange);
             gunAudioSource.Play();
             
             var cameraTransform = PlayerCamera.Instance.transform;

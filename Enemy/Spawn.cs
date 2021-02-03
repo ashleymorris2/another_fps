@@ -36,7 +36,8 @@ namespace Enemy
                 var randomSpawnPoint = transform.position + Random.insideUnitSphere * spawnRadius;
                 if (NavMesh.SamplePosition(randomSpawnPoint, out var hit, spawnRadius, NavMesh.AllAreas))
                 {
-                    Instantiate(zombiePrefabs[Random.Range(0, zombiePrefabs.Length - 1)], hit.position, Quaternion.identity);
+                    var x = Random.Range(0, zombiePrefabs.Length );
+                    Instantiate(zombiePrefabs[x], hit.position, Quaternion.identity);
                 }
                 else
                 {

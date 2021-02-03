@@ -1,5 +1,8 @@
 //Enters chase state if it can see or hear the player
 //Can enter the wander state on a timer
+
+using ToExport.Scripts.Enemy.Zombie;
+
 namespace Enemy.Zombie.State
 {
     public class ZombieIdleState : BaseState<ZombieController>

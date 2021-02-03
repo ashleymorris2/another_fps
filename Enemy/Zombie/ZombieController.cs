@@ -1,12 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
-using BehaviorDesigner.Runtime.Tasks;
+using System.Collections;
 using Enemy.Zombie.State;
 using RootMotion.Dynamics;
-using ToExport.Scripts.Enemy;
+using ToExport.Scripts.Enemy.Zombie.State;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Enemy.Zombie
+namespace ToExport.Scripts.Enemy.Zombie
 {
     public class ZombieController : MonoBehaviour, IDamageable
     {
@@ -16,10 +15,12 @@ namespace Enemy.Zombie
 
         [SerializeField] private float walkingSpeed = 1f;
         [SerializeField] private float runningSpeed = 8f;
-        
+        [SerializeField] private int maxHealth;
+
         private string _currentAnimationState;
         private Animator _enemyAnimator;
         private BaseState<ZombieController> _currentState;
+        public int _currentHealth;
 
         public readonly ZombieIdleState idleState = new ZombieIdleState();
         public readonly ZombieChasingState chaseState = new ZombieChasingState();
@@ -27,16 +28,16 @@ namespace Enemy.Zombie
         public readonly ZombieWanderState wanderState = new ZombieWanderState();
         public readonly ZombieFallenState fallenState = new ZombieFallenState();
         public readonly ZombieDeadState deadState = new ZombieDeadState();
-        
+
         public GameObject Target => target;
         public BehaviourPuppet Puppet => puppet;
         public float WalkingSpeed => walkingSpeed;
         public float RunningSpeed => runningSpeed;
-        
+
         public NavMeshAgent MeshAgent { get; private set; }
         public BaseState<ZombieController> PreviousState { get; private set; }
         public float StoppingDistance { get; private set; }
-        
+
         void Start()
         {
             _enemyAnimator = GetComponent<Animator>();
@@ -49,16 +50,18 @@ namespace Enemy.Zombie
             {
                 target = GameObject.FindWithTag("Player");
             }
-            
+
             StoppingDistance = MeshAgent.stoppingDistance;
+
+            _currentHealth = maxHealth;
         }
 
         void Update()
         {
-            // if (puppet)
-            //     MeshAgent.enabled = puppet.state == BehaviourPuppet.State.Puppet;
-            
             _currentState.DoState(this);
+
+            if (_currentHealth == 0)
+                TransitionToState(deadState);
         }
 
         public void TransitionToState(BaseState<ZombieController> newState)
@@ -69,7 +72,7 @@ namespace Enemy.Zombie
             _currentState?.OnExitState(this);
 
             PreviousState = _currentState;
-            
+
             _currentState = newState;
 
             _currentState?.OnEnterState(this);
@@ -77,12 +80,15 @@ namespace Enemy.Zombie
 
         public void ChangeAnimationState(string newState, float transitionTime = 0f)
         {
-            // if (newState == _currentAnimationState)
-            //     return;
-
             _enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
 
             _currentAnimationState = newState;
+        }
+
+
+        public void StopAnimation()
+        {
+            _enemyAnimator.enabled = false;
         }
 
         public float DistanceToPlayer()
@@ -113,10 +119,42 @@ namespace Enemy.Zombie
             return (targetDistanceToLastPosition >= 3f);
         }
 
-        public void TakeDamage(int damageAmount)
+        public void TakeDamage(Collider hitCollider, int damageAmount)
         {
-            Debug.Log($"I have taken {damageAmount} damage");
+            if (hitCollider.name.ToLower() == "head")
+                damageAmount *= 2;
+
+            _currentHealth = Mathf.Clamp(_currentHealth -= damageAmount, 0, maxHealth);
+            
         }
-        
+
+        public void SinkBody(float sinkTime, float sinkHeight)
+        {
+            Invoke(nameof(RemoveColliders), sinkTime);
+
+            StartCoroutine(DestroyGameObject(sinkHeight));
+        }
+
+        private void RemoveColliders()
+        {
+            var colliders = transform.root.GetComponentsInChildren<Collider>();
+            foreach (var c in colliders)
+            {
+                Destroy(c);
+            }
+        }
+
+        private IEnumerator DestroyGameObject(float terrainHeight)
+        {
+            while (transform.position.y > terrainHeight)
+            {
+                transform.Translate(0, -0.001f, 0f);
+
+                yield return null;
+            }
+
+            if (transform.position.y < terrainHeight)
+                Destroy(transform.root.gameObject);
+        }
     }
 }

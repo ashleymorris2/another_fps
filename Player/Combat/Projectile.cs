@@ -8,6 +8,7 @@ namespace ToExport.Scripts.Player.Combat
     public class Projectile : MonoBehaviour
     {
         [SerializeField] private LayerMask layersToIgnore;
+        [SerializeField] private ParticleSystem fleshHitEffect;
 
         private float _speed;
         private bool _parametersSet;
@@ -15,12 +16,7 @@ namespace ToExport.Scripts.Player.Combat
         private int predictionStepsPerFrame = 6;
 
         private Vector3 _bulletVelocity;
-
-        // private void Start()
-        // {
-        //     _bulletVelocity = transform.forward * _speed; //Gives us the direction of the bullet and the speed at which it moves
-        // }
-
+        
         private void Update()
         {
             if (_parametersSet)
@@ -42,10 +38,13 @@ namespace ToExport.Scripts.Player.Combat
                     if (Physics.Raycast(ray, out var hitInfo, direction.magnitude, ~layersToIgnore))
                     {
                         //Hit something here check the collider
-                        Debug.Log("hit" + hitInfo.collider.gameObject);
-                        Debug.Log("hit parent" + hitInfo.collider.gameObject.transform.root);
+                        // Debug.Log("hit " + hitInfo.collider.gameObject);
+                        // Debug.Log("hit parent" + hitInfo.collider.gameObject.transform.root);
+
+                       var x=  Instantiate(fleshHitEffect, hitInfo.point, Quaternion.LookRotation(hitInfo.normal),
+                             hitInfo.transform.gameObject.transform);
                         
-                        HandleCollision(hitInfo.collider.gameObject.transform.root);
+                        HandleCollision(hitInfo.collider);
 
                         TestingCode(hitInfo, direction);
 
@@ -59,12 +58,14 @@ namespace ToExport.Scripts.Player.Combat
             }
         }
 
-        private void HandleCollision(Transform transformRoot)
+        private void HandleCollision(Collider other)
         {
-            var damageable = transformRoot.gameObject.GetComponentInChildren<IDamageable>();
-            damageable.TakeDamage(_damage);
+            var rootObject = other.gameObject.transform.root.gameObject;
+            var damageableObject = rootObject.GetComponentInChildren<IDamageable>();
+            
+            damageableObject?.TakeDamage(other, _damage);
         }
-
+        
         void TestingCode(RaycastHit hit, Vector3 direction)
         {
             float unpin = 2;
@@ -86,7 +87,7 @@ namespace ToExport.Scripts.Player.Combat
                 hitLimb.AddForceAtPosition(direction * force, hit.point);
             }
         }
-
+        
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;

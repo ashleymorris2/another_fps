@@ -1,7 +1,9 @@
-﻿namespace ToExport.Scripts.Enemy
+﻿using UnityEngine;
+
+namespace ToExport.Scripts.Enemy
 {
     public interface IDamageable
     {
-        void TakeDamage(int damageAmount);
+        void TakeDamage(Collider hitCollider, int damageAmount);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Core
+namespace ToExport.Scripts.Core
 {
     public class Singleton<T> : MonoBehaviour where T : MonoBehaviour 
     {

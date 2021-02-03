@@ -1,7 +1,8 @@
-﻿using RootMotion.Dynamics;
+﻿using Enemy.Zombie.State;
+using RootMotion.Dynamics;
 using UnityEngine;
 
-namespace Enemy.Zombie.State
+namespace ToExport.Scripts.Enemy.Zombie.State
 {
     public class ZombieFallenState : BaseState<ZombieController>
     {

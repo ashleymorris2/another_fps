@@ -1,4 +1,5 @@
 using RootMotion.Dynamics;
+using ToExport.Scripts.Enemy.Zombie;
 using UnityEngine;
 
 namespace Enemy.Zombie.State

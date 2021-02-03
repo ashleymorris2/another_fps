@@ -1,10 +1,13 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "AmmoPickupStats")]
-public class AmmoPickupStats : ScriptableObject
+namespace ToExport.Scripts.ScriptableObjects
 {
-    [SerializeField] AudioClip ammoPickUpAudio;
-    [SerializeField] int ammoAmount;
+    [CreateAssetMenu(menuName = "AmmoPickupStats")]
+    public class AmmoPickupStats : ScriptableObject
+    {
+        [SerializeField] AudioClip ammoPickUpAudio;
+        [SerializeField] int ammoAmount;
 
-    public int AmmoAmount { get => ammoAmount; }
+        public int AmmoAmount => ammoAmount;
+    }
 }

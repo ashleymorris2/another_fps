@@ -1,5 +1,5 @@
 ﻿using System;
-using Core;
+using ToExport.Scripts.Core;
 using UnityEngine;
 
 namespace Player

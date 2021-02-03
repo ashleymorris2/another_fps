@@ -1,4 +1,6 @@
 
+using ToExport.Scripts.Enemy.Zombie;
+
 namespace Enemy.Zombie.State
 {
     public class ZombieAttackState : BaseState<ZombieController>

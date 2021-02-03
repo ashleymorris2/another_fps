@@ -1,4 +1,4 @@
-using Core;
+using ToExport.Scripts.Core;
 
 namespace Player
 {
