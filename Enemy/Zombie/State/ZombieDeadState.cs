@@ -20,9 +20,9 @@ namespace ToExport.Scripts.Enemy.Zombie.State
 
             enemy.MeshAgent.enabled = false;
                 
-            var sinkHeight = Terrain.activeTerrain.SampleHeight(enemy.transform.position) - 4;
+            var sinkHeight = Terrain.activeTerrain.SampleHeight(enemy.transform.position) - 2;
             enemy.SinkBody(8f, sinkHeight);
-            
+           
         }
 
         public override void DoState(ZombieController enemy)

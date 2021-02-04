@@ -13,21 +13,22 @@ namespace ToExport.Scripts.Enemy.Zombie
         [SerializeField] private GameObject target;
         [SerializeField] BehaviourPuppet puppet;
 
+        [SerializeField] private int attackDamage;
         [SerializeField] private float walkingSpeed = 1f;
         [SerializeField] private float runningSpeed = 8f;
         [SerializeField] private int maxHealth;
 
-        private string _currentAnimationState;
         private Animator _enemyAnimator;
         private BaseState<ZombieController> _currentState;
-        public int _currentHealth;
-
+        
         public readonly ZombieIdleState idleState = new ZombieIdleState();
         public readonly ZombieChasingState chaseState = new ZombieChasingState();
         public readonly ZombieAttackState attackState = new ZombieAttackState();
         public readonly ZombieWanderState wanderState = new ZombieWanderState();
         public readonly ZombieFallenState fallenState = new ZombieFallenState();
         public readonly ZombieDeadState deadState = new ZombieDeadState();
+
+        private int _currentHealth;
 
         public GameObject Target => target;
         public BehaviourPuppet Puppet => puppet;
@@ -81,14 +82,6 @@ namespace ToExport.Scripts.Enemy.Zombie
         public void ChangeAnimationState(string newState, float transitionTime = 0f)
         {
             _enemyAnimator.CrossFadeInFixedTime(newState, transitionTime);
-
-            _currentAnimationState = newState;
-        }
-
-
-        public void StopAnimation()
-        {
-            _enemyAnimator.enabled = false;
         }
 
         public float DistanceToPlayer()
@@ -125,7 +118,17 @@ namespace ToExport.Scripts.Enemy.Zombie
                 damageAmount *= 2;
 
             _currentHealth = Mathf.Clamp(_currentHealth -= damageAmount, 0, maxHealth);
-            
+        }
+
+        public void Attack()
+        {
+            if (DistanceToPlayer() <= StoppingDistance)
+            {
+                if (target.TryGetComponent<IDamageable>(out var damageable))
+                {
+                    damageable.TakeDamage(null, attackDamage);
+                }
+            }
         }
 
         public void SinkBody(float sinkTime, float sinkHeight)

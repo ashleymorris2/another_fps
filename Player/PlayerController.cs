@@ -1,5 +1,6 @@
 ﻿using Player;
 using Player.State;
+using ToExport.Scripts.Enemy;
 using ToExport.Scripts.PickUps;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -7,7 +8,7 @@ using Random = UnityEngine.Random;
 namespace ToExport.Scripts.Player
 {
     [RequireComponent(typeof(InputManager))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, IDamageable
     {
         [SerializeField] private float walkSpeed = 6f;
         
@@ -25,7 +26,6 @@ namespace ToExport.Scripts.Player
         private Quaternion playerRotation;
         private float cameraPitch = 0f;
         private Vector2 currentDirection = Vector2.zero;
-
         
         [SerializeField] Camera playerCamera;
         [SerializeField] Animator playerAnimator;
@@ -42,13 +42,11 @@ namespace ToExport.Scripts.Player
         #endregion
 
         public bool IsMoving { get; private set; } = false;
-        
         public bool RifleIsReady { get; private set; } = false;
 
         (int count, int max) Ammo = (400, 400);
         (int count, int max) AmmoClip = (30, 30);
-
-
+        
         private string _currentAnimationState;
 
         private void OnEnable()
@@ -93,7 +91,6 @@ namespace ToExport.Scripts.Player
 
             Ammo.count -= ammoAvailable;
             AmmoClip.count += ammoAvailable;
-            
         }
 
         private void HandleShoot()
@@ -160,8 +157,7 @@ namespace ToExport.Scripts.Player
 
             IsMoving = (Mathf.Abs(targetDirection.x) > 0 || Mathf.Abs(targetDirection.y) > 0);
         }
-
-
+        
         private void PlayRandomFootstepAudio()
         {
             AudioSource audioSource = new AudioSource();
@@ -225,6 +221,11 @@ namespace ToExport.Scripts.Player
         private void OnDisable()
         {
             InputManager.OnReloadKeyDown -= HandleReload;
+        }
+
+        public void TakeDamage(Collider hitCollider, int damageAmount)
+        {
+            Debug.Log($"Ouch: {damageAmount}");
         }
     }
 }
