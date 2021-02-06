@@ -1,5 +1,6 @@
 ﻿using Player;
 using Player.State;
+using ToExport.Scripts.Core;
 using ToExport.Scripts.Enemy;
 using ToExport.Scripts.PickUps;
 using UnityEngine;
@@ -13,30 +14,23 @@ namespace ToExport.Scripts.Player
         [SerializeField] private float walkSpeed = 6f;
         
         private float mouseSensitivity = 3f;
-
-        PlayerBaseState _currentState;
+        private Rigidbody _playerBody;
+        private CapsuleCollider _playerCapsule;
+        private float _cameraPitch = 0f;
+        private Vector2 _currentDirection = Vector2.zero;
+        private HealthController _playerHealth;
+        private PlayerBaseState _currentState;
         
         public readonly PlayerIdleState idleState = new PlayerIdleState();
         public readonly PlayerJumpingState jumpingState = new PlayerJumpingState();
         public readonly PlayerMovingState movingState = new PlayerMovingState();
 
-        private Rigidbody playerBody;
-        private CapsuleCollider playerCapsule;
-        private Quaternion cameraRotation;
-        private Quaternion playerRotation;
-        private float cameraPitch = 0f;
-        private Vector2 currentDirection = Vector2.zero;
-        
         [SerializeField] Camera playerCamera;
         [SerializeField] Animator playerAnimator;
 
         #region refactor_out
         [SerializeField] AudioSource playerAudio;
         [SerializeField] AudioSource[] footstepsAudio;
-        [SerializeField] AudioClip jumpAudio;
-        [SerializeField] AudioClip landAudio;
-        [SerializeField] AudioClip ammoPickupAudio;
-        [SerializeField] AudioClip healthPickupAudio;
         [SerializeField] AudioClip emptyGunAudio;
         [SerializeField] AudioClip reloadAudio;
         #endregion
@@ -56,12 +50,16 @@ namespace ToExport.Scripts.Player
 
         void Start()
         {
-            playerBody = GetComponent<Rigidbody>();
-            playerCapsule = GetComponent<CapsuleCollider>();
-
-            cameraRotation = playerCamera.transform.localRotation;
-            playerRotation = transform.localRotation;
-
+            _playerBody = GetComponent<Rigidbody>();
+            _playerCapsule = GetComponent<CapsuleCollider>();
+            _playerHealth = GetComponent<HealthController>();
+            
+            _playerHealth.Init((() =>
+            {
+                Debug.Log("I've died");
+                GameStateManager.Instance.ChangeState(GameState.GameOver);
+            }));
+            
             TransitionToState(idleState);
         }
 
@@ -116,7 +114,7 @@ namespace ToExport.Scripts.Player
 
         public void Jump()
         {
-            playerBody.AddForce(0, 300, 0);
+            _playerBody.AddForce(0, 300, 0);
         }
 
         public void HandleWalking()
@@ -160,10 +158,9 @@ namespace ToExport.Scripts.Player
         
         private void PlayRandomFootstepAudio()
         {
-            AudioSource audioSource = new AudioSource();
             int randomIndex = Random.Range(1, footstepsAudio.Length);
 
-            audioSource = footstepsAudio[randomIndex];
+            var audioSource = footstepsAudio[randomIndex];
             audioSource.Play();
 
             footstepsAudio[randomIndex] = footstepsAudio[0];
@@ -174,17 +171,17 @@ namespace ToExport.Scripts.Player
         {
             Vector2 mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
 
-            cameraPitch -= mouseDelta.y * mouseSensitivity;
-            cameraPitch = Mathf.Clamp(cameraPitch, -90f, 90f);
+            _cameraPitch -= mouseDelta.y * mouseSensitivity;
+            _cameraPitch = Mathf.Clamp(_cameraPitch, -90f, 90f);
 
-            playerCamera.transform.localEulerAngles = Vector3.right * cameraPitch;
-            playerBody.transform.Rotate(Vector3.up * (mouseDelta.x * mouseSensitivity));
+            playerCamera.transform.localEulerAngles = Vector3.right * _cameraPitch;
+            _playerBody.transform.Rotate(Vector3.up * (mouseDelta.x * mouseSensitivity));
         }
 
         public bool IsGrounded()
         {
-            return (Physics.SphereCast(transform.position, playerCapsule.radius, Vector3.down, out var hitInfo,
-                (playerCapsule.height / 2f) - playerCapsule.radius + 0.1f));
+            return (Physics.SphereCast(transform.position, _playerCapsule.radius, Vector3.down, out _,
+                (_playerCapsule.height / 2f) - _playerCapsule.radius + 0.1f));
         }
 
         public void TransitionToState(PlayerBaseState newState)
@@ -226,6 +223,8 @@ namespace ToExport.Scripts.Player
         public void TakeDamage(Collider hitCollider, int damageAmount)
         {
             Debug.Log($"Ouch: {damageAmount}");
+            
+            _playerHealth.RemoveHealth(damageAmount);
         }
     }
 }

@@ -4,6 +4,8 @@ namespace ToExport.Scripts.Core
 {
     public class Singleton<T> : MonoBehaviour where T : MonoBehaviour 
     {
+        private static T _instance;
+
         public static T Instance 
         { 
             get
@@ -14,7 +16,5 @@ namespace ToExport.Scripts.Core
                 return _instance;
             }
         }
-
-        private static T _instance;
     }
 }

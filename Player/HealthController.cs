@@ -20,11 +20,16 @@ namespace ToExport.Scripts.Player
             }
         }
 
-        public static event Action OnDeath;
+        private event Action OnDeath;
         
         private void Awake()
         {
             CurrentHealth = maxHealth;
+        }
+
+        public void Init(Action onDeath)
+        {
+            OnDeath = onDeath;
         }
         
         public bool IsAtMax() => CurrentHealth == maxHealth;
@@ -38,6 +43,6 @@ namespace ToExport.Scripts.Player
         {
             CurrentHealth = Mathf.Clamp(CurrentHealth - damageAmount, 0, maxHealth);
         }
-        
+
     }
 }

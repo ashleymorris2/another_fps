@@ -2,6 +2,7 @@
 //Can enter the wander state on a timer
 
 using ToExport.Scripts.Enemy.Zombie;
+using UnityEngine;
 
 namespace Enemy.Zombie.State
 {

@@ -1,6 +1,7 @@
 using System.Collections;
 using Enemy.Zombie.State;
 using RootMotion.Dynamics;
+using ToExport.Scripts.Core;
 using ToExport.Scripts.Enemy.Zombie.State;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,7 +21,7 @@ namespace ToExport.Scripts.Enemy.Zombie
 
         private Animator _enemyAnimator;
         private BaseState<ZombieController> _currentState;
-        
+
         public readonly ZombieIdleState idleState = new ZombieIdleState();
         public readonly ZombieChasingState chaseState = new ZombieChasingState();
         public readonly ZombieAttackState attackState = new ZombieAttackState();
@@ -59,10 +60,13 @@ namespace ToExport.Scripts.Enemy.Zombie
 
         void Update()
         {
-            _currentState.DoState(this);
+            if (GameStateManager.Instance.CurrentGameState == GameState.InProgress)
+            {
+                _currentState.DoState(this);
 
-            if (_currentHealth == 0)
-                TransitionToState(deadState);
+                if (_currentHealth == 0)
+                    TransitionToState(deadState);
+            }
         }
 
         public void TransitionToState(BaseState<ZombieController> newState)
@@ -120,6 +124,9 @@ namespace ToExport.Scripts.Enemy.Zombie
             _currentHealth = Mathf.Clamp(_currentHealth -= damageAmount, 0, maxHealth);
         }
 
+        /**
+         *  Called from animation (Don't like this!)
+         */
         public void Attack()
         {
             if (DistanceToPlayer() <= StoppingDistance)
